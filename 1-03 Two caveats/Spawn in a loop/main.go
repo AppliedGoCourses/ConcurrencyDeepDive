@@ -5,35 +5,36 @@ import (
 	"time"
 )
 
-func spawnInALoop() {
-	for i := 0; i < 10; i++ {
+func spawnInALoop(urls []string) {
+	for _, url := range urls {
 		// Our goroutine is a closure, and closures can
 		// access variables in the outer scope, so we can
-		// grab i here to give each goroutine an ID, right?
+		// grab the URL here to give each goroutine an ID, right?
 		// (Hint: wrong.)
 		go func() {
-			fmt.Println("Goroutine", i)
+			fmt.Println("Fetching", url)
 		}() // <- Don't forget to call () the closure
 	}
 	time.Sleep(100 * time.Millisecond)
 }
 
-func spawnInALoopFixed() {
-	for i := 0; i < 10; i++ {
+func spawnInALoopFixed(urls []string) {
+	for _, url := range urls {
 		// Always pass any start value properly as a
 		// function parameter. This way, nothing can go wrong.
-		go func(n int) {
-			fmt.Println("Goroutine", n)
-		}(i) // We pass i here as an argument
+		go func(url string) {
+			fmt.Println("Fetching", url)
+		}(url) // We pass the URL here as an argument
 	}
 	time.Sleep(100 * time.Millisecond)
 }
 
 func main() {
 	fmt.Println("*** Spawn in a loop ***")
-	spawnInALoop()
+
+	urls := []string{"https://appliedgo.com", "https://appliedgo.net", "https://golang.org", "https://go.dev"}
+	spawnInALoop(urls)
 
 	fmt.Println("\n*** Fixed ***")
-	spawnInALoopFixed()
-
+	spawnInALoopFixed(urls)
 }

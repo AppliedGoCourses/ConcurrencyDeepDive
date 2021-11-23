@@ -15,7 +15,6 @@ func spawnInALoop(urls []string) {
 			fmt.Println("Fetching", url)
 		}() // <- Don't forget to call () the closure
 	}
-	time.Sleep(100 * time.Millisecond)
 }
 
 func spawnInALoopFixed(urls []string) {
@@ -35,6 +34,7 @@ func main() {
 	urls := []string{"https://appliedgo.com", "https://appliedgo.net", "https://golang.org", "https://go.dev"}
 	spawnInALoop(urls)
 
+	time.Sleep(100 * time.Millisecond)
 	fmt.Println("\n*** Fixed ***")
 	spawnInALoopFixed(urls)
 }

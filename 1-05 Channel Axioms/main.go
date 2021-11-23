@@ -2,25 +2,31 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"time"
 )
 
-func nilChannel() {
-	var c chan int // the zero value is nil
+func nilChannel(c chan int) {
 
 	// This is our sender goroutine.
-	go func(c chan int) {
-		// Try to send something to a nil channel.
-		c <- 42
+	go func(ch chan int) {
+		fmt.Println("Trying to send something to a nil channel...")
+		ch <- 42
+		fmt.Println("Done sending to nil channel. (You should not see this message.)")
 	}(c)
 
-	// Now try receiving something from the nil channel.
+	fmt.Println("Trying to receive something from a nil channel...")
 	n := <-c
-	fmt.Println(n)
+	fmt.Printf("Received %d from nil channel. (You should not see this message.)\n", n)
 }
 
-func sendToClosedChannel(c chan int) {
+func sendToClosedChannel(c chan<- int) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Printf("Panic: %v\n", r)
+		}
+	}()
+
 	c <- 1
 	c <- 2
 	c <- 3
@@ -32,14 +38,14 @@ func sendToClosedChannel(c chan int) {
 }
 
 func receiveFromClosedChannel(c chan int) {
-	for {
+	for i := 1; i < 5; i++ {
 		n := <-c
-		fmt.Println("Read:", n)
+		fmt.Println("Read from closed channel:", n)
 	}
 }
 
 func receiveFromClosedChannelCommaOk(c chan int) {
-	for {
+	for i := 1; i < 5; i++ {
 		n, ok := <-c
 		if !ok {
 			fmt.Println("Comma,ok: the channel is closed")
@@ -50,23 +56,23 @@ func receiveFromClosedChannelCommaOk(c chan int) {
 }
 
 func main() {
-	// Since both tests trigger a fatal error, you have to decide which
-	// test to run. Pass "nil" as an argument in order to run the nil channel test,
-	// and no argument in order to run the closed channel tests.
 
-	if len(os.Args) > 1 && os.Args[1] == "nil" {
-		fmt.Println("A send to a nil channel blocks forever. ")
-		fmt.Println("A receive from a nil channel blocks forever. ")
-		nilChannel()
-	}
+	fmt.Println("A send to a nil channel blocks forever. ")
+	fmt.Println("A receive from a nil channel blocks forever. ")
+
+	var ch chan int // the zero value is nil
+	go nilChannel(ch)
 
 	fmt.Println("A send to a closed channel panics.")
 	fmt.Println("A receive from a closed channel returns the zero value immediately.")
+
 	c := make(chan int, 10)
+	close(c)
+
 	// Sorry for the unwieldy function names...
 	go sendToClosedChannel(c)
 	go receiveFromClosedChannel(c)
 	receiveFromClosedChannelCommaOk(c)
-	time.Sleep(time.Second)
+	time.Sleep(time.Millisecond)
 
 }

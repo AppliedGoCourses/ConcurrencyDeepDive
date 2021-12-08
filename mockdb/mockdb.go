@@ -30,7 +30,11 @@ func (m *MockDB) Status() (string, error) {
 
 // Open opens a connection to a MockDB server, defined by connection string "conn".
 // If no connection can be established, Open returns an error.
+// The call may get delayed by up to one second, to support
+// demonstrating timeout behavior.
 func Open(conn string) (*MockDB, error) {
+
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 
 	if rand.Float64() > 0.8 {
 		return nil, fmt.Errorf("Error connecting to %s", conn)

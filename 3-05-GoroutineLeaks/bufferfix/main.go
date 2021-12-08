@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-// Later, we will redefine this func for a fix, hence we assign it to a variable.
+// Fix: use a buffered channel to collect results
+
 func webSearch(url, query string, c chan<- string) {
 	// Do a fake search and pass the "result" to the channel
 	fmt.Printf("Goroutine: trying to write result from %s to the channel.\n", url)

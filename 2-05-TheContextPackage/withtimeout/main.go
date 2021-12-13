@@ -39,7 +39,7 @@ func main() {
 
 	// Derive a child context that has the
 	// cancellation and timeout features.
-	ctx, cancel := context.WithTimeout(bgctx, time.Duration(3*time.Second))
+	ctx, cancel := context.WithTimeout(bgctx, 3*time.Second)
 
 	queries := []string{"pid=5543", "HTTP_418", "CON_RST"}
 	logs := make(chan string)

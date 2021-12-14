@@ -1,4 +1,4 @@
-module withcancel
+module withtimeout
 
 go 1.17
 

@@ -1,4 +1,4 @@
-module withtimeout
+module github.com/AppliedGoCourses/ConcurrencyDeepDive/2-05-TheContextPackage/withtimeout
 
 go 1.17
 

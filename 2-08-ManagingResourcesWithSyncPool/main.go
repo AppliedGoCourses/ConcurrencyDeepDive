@@ -20,6 +20,9 @@ import (
 // time savings that can be achieved by pooling. Try e.g., 10, 20, and 30
 const msec = 10
 
+// Used for muting output during benchmarking.
+var stdout = os.Stdout
+
 // batchQueryWithoutPool runs a batch of queries without using a sync.Pool.
 func batchQueryWithoutPool() {
 	var g errgroup.Group
@@ -30,7 +33,7 @@ func batchQueryWithoutPool() {
 		// about every msec milliseconds.)
 		time.Sleep(msec * time.Millisecond)
 		g.Go(func() error {
-			printIfNotInTest("Creating a new connection")
+			fmt.Fprintln(stdout, "Creating a new connection")
 			db, _ := mockdb.Open("Server1")
 			// intentionally ignoring the error from the above call to Open(),
 			// as it is not relevant for showcasing sync.Pool.
@@ -62,13 +65,13 @@ func batchQueryWithPool() {
 			item := pool.Get()
 			if item == nil {
 				// The pool returned no connection, so create a new one.
-				printIfNotInTest("Creating a new connection")
+				fmt.Fprintln(stdout, "Creating a new connection")
 				db, _ = mockdb.Open("Server1")
 			} else {
 				// The pool returned an item of type "any" (or "interface{}").
 				// We need to type assert it to the concrete type "*MockDB".
 				db = item.(*mockdb.MockDB)
-				printIfNotInTest("Reusing a connection from the pool")
+				fmt.Fprintln(stdout, "Reusing a connection from the pool")
 			}
 
 			// pretend doing some work
@@ -84,7 +87,7 @@ func batchQueryWithPool() {
 func batchQueryWithAutoPool() {
 	pool := &sync.Pool{
 		New: func() interface{} {
-			printIfNotInTest("Pool: Creating a new connection")
+			fmt.Fprintln(stdout, "Pool: Creating a new connection")
 			db, _ := mockdb.Open("Server1")
 			return db
 		},
@@ -99,7 +102,7 @@ func batchQueryWithAutoPool() {
 
 			// Get a connection from the pool.
 			// If none exists, the pool creates a new one.
-			printIfNotInTest("Request a connection from the pool")
+			fmt.Fprintln(stdout, "Request a connection from the pool")
 			db = pool.Get().(*mockdb.MockDB)
 			_, _ = db.Query("select ingredients from recipes where name = 'rice bowl'")
 			pool.Put(db)
@@ -118,7 +121,7 @@ func batchQueryWithAutoPool() {
 func batchQueryWithLimitedAutoPool() {
 	pool := &sync.Pool{
 		New: func() interface{} {
-			printIfNotInTest("Pool: Creating a new connection")
+			fmt.Fprintln(stdout, "Pool: Creating a new connection")
 			db, _ := mockdb.Open("Server1")
 			return db
 		},
@@ -141,17 +144,17 @@ func batchQueryWithLimitedAutoPool() {
 			case limit <- struct{}{}:
 				// The limit chan is not yet full, so we can get a DB connection.
 				db = pool.Get().(*mockdb.MockDB)
-				printIfNotInTest("Got a connection from the pool -", len(limit))
+				fmt.Fprintln(stdout, "Got a connection from the pool -", len(limit))
 			case <-time.After(msec * 20 * time.Millisecond):
 				// The limit chan is still full, let's stop waiting.
-				printIfNotInTest("Timeout waiting for a connection")
+				fmt.Fprintln(stdout, "Timeout waiting for a connection")
 				return nil // returning an error would make the errgroup stop the other goroutines
 			default:
 				// This default case is ONLY necessary for printing the wait status.
 				// Usually, you do not want a busy loop here. Remove this default case,
 				// and the select statement then blocks until either a connection
 				// becomes available or the timeout occurs.
-				printIfNotInTest("    Waiting for an available connection")
+				fmt.Fprintln(stdout, "    Waiting for an available connection")
 				<-time.After(msec * 5 * time.Millisecond)
 			}
 			_, _ = db.Query("select ingredients from recipes where name = 'rice bowl'")
@@ -160,10 +163,10 @@ func batchQueryWithLimitedAutoPool() {
 			// than the limit would allow.
 			select {
 			case <-limit:
-				printIfNotInTest("Put a connection back to the pool -", len(limit))
+				fmt.Fprintln(stdout, "Put a connection back to the pool -", len(limit))
 				pool.Put(db)
 			default:
-				printIfNotInTest("Pool is full, closing the connection")
+				fmt.Fprintln(stdout, "Pool is full, closing the connection")
 				db.Close()
 			}
 			return nil
@@ -179,7 +182,7 @@ func batchQueryWithLimitedAutoPool() {
 func limitedBatchQuery() {
 	pool := &sync.Pool{
 		New: func() interface{} {
-			printIfNotInTest("Pool: Creating a new connection")
+			fmt.Fprintln(stdout, "Pool: Creating a new connection")
 			db, _ := mockdb.Open("Server1")
 			return db
 		},
@@ -199,7 +202,7 @@ func limitedBatchQuery() {
 		case limit <- struct{}{}:
 			g.Go(func() (err error) {
 				var db *mockdb.MockDB
-				printIfNotInTest(len(limit), "goroutines are running")
+				fmt.Fprintln(stdout, len(limit), "goroutines are running")
 
 				db = pool.Get().(*mockdb.MockDB)
 				_, _ = db.Query("select ingredients from recipes where name = 'rice bowl'")
@@ -212,32 +215,19 @@ func limitedBatchQuery() {
 	g.Wait()
 }
 
-// inMain is false (zero value) if the benchmarks are running.
-// Used to avoid printing in benchmark mode.
-var inMain bool
-
-// printIfNotInTest is a drop-in replacement for fmt.Println() that
-// only prints something if the benchmarks are not running.
-func printIfNotInTest(s ...any) {
-	if inMain {
-		fmt.Println(s...)
-	}
-}
-
 type funcs []struct {
 	name string
 	fn   func()
 }
 
 func usage(fns funcs) {
-	fmt.Println("Usage: syncpool n")
+	fmt.Fprintln(stdout, "Usage: syncpool n")
 	for i, fn := range fns {
 		fmt.Printf("\tn = %d: %s\n", i, fn.name)
 	}
 }
 
 func main() {
-	inMain = true
 	fns := funcs{
 		{"batch query without pool", batchQueryWithoutPool},
 		{"batch query with pool", batchQueryWithPool},
@@ -255,6 +245,6 @@ func main() {
 		usage(fns)
 		return
 	}
-	printIfNotInTest(fns[n].name)
+	fmt.Fprintln(stdout, fns[n].name)
 	fns[n].fn()
 }

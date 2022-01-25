@@ -11,38 +11,44 @@ import (
 	"github.com/gosuri/uilive"
 )
 
-func busyWorker() {
-	// fmt.Print(".")
+func worker() {
 	for {
 		// always busy! (Until activating the time.Sleep
 		// call below, a blocking operation)
-		time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Millisecond)
+		// unix.Getpid() // a system call
 	}
 }
 
-func showGoroutines() {
+// showStats writes out the number of goroutines, threads and CPU's every second
+func showStats() {
 	term := uilive.New()
+	term.RefreshInterval = 1 * time.Second
 	term.Start()
+	n := 0
 	for {
-		n := runtime.NumGoroutine()
-		fmt.Fprintln(term, n, "goroutines")
+		fmt.Fprintln(term, n, "s")
+		g := runtime.NumGoroutine()
+		fmt.Fprintln(term.Newline(), g, "goroutines")
+		t := systemThreadCount()
+		fmt.Fprintln(term.Newline(), t, "threads")
+		c := runtime.NumCPU()
+		fmt.Fprintln(term.Newline(), c, "CPUs")
+		term.Flush()
+		n++
 		time.Sleep(1 * time.Second)
 	}
 }
 
 func main() {
 
-	// Display the current number of goroutines every second.
+	// Display the current number of threads and goroutines every second.
+	go showStats()
 
-	go showGoroutines()
-
-	// Spawn large numbers of busy workers
-	// Then inspect the running Go binary, to see how many
-	// system threads are running.
-
+	// Spawn large numbers of workers
 	for i := 0; i < 100000; i++ {
-		go busyWorker()
+		go worker()
 	}
 
-	time.Sleep(30 * time.Second) // Use Ctrl-C to exit earlier
+	time.Sleep(10 * time.Second) // Use Ctrl-C to exit earlier
 }

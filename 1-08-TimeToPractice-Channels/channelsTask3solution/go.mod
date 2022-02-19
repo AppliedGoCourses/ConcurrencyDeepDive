@@ -1,3 +1,3 @@
-module github.com/AppliedGoCourses/ConcurrencyDeepDive/1-07-TimeToPractice-Channels/channelsTask3solution
+module github.com/AppliedGoCourses/ConcurrencyDeepDive/1-08-TimeToPractice-Channels/channelsTask3solution
 
 go 1.16

@@ -1,0 +1,6 @@
+tasks:
+  - cmd: |
+      go install golang.org/dl/go1.18rc1@latest
+      go1.18rc1 download
+      mv /workspace/go/bin/go1.18rc1 /home/gitpod/go/bin/go
+

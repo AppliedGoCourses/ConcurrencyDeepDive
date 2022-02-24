@@ -28,6 +28,12 @@ func (m *MockDB) Status() (string, error) {
 	return fmt.Sprintf("Server %s: %s", m.name, states[rand.Intn(len(states))]), nil
 }
 
+// Query returns a mocked result set, after an artificial delay.
+func (m *MockDB) Query(query string) ([]string, error) {
+	time.Sleep(100 * time.Millisecond)
+	return []string{"rice (1 cup)", "carrots (250g)", "mushrooms (150g)", "herbs and spices as you like"}, nil
+}
+
 // Open opens a connection to a MockDB server, defined by connection string "conn".
 // If no connection can be established, Open returns an error.
 // The call may get delayed by up to one second, to support

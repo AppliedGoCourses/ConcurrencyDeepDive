@@ -1,4 +1,4 @@
-module withoutcontext
+module github.com/AppliedGoCourses/ConcurrencyDeepDive/2-05-TheContextPackage/withoutcontext
 
 go 1.17
 

@@ -20,7 +20,7 @@ func copyFile(task string, source, target *File) {
 	source.mu.Lock()
 	// simulate time for opening the source file
 	// to highly increase the chances for a deadlock
-	<-time.After(time.Millisecond * 100)
+	time.Sleep(time.Millisecond)
 	log.Printf("%s: lock target %s\n", task, target.path)
 	target.mu.Lock()
 
@@ -45,7 +45,7 @@ func copyFileOrderedLock(task string, source, target *File) {
 
 	log.Printf("%s: lock first %s\n", task, first.path)
 	first.mu.Lock()
-	<-time.After(time.Millisecond * 100)
+	time.Sleep(time.Millisecond)
 	log.Printf("%s: lock second %s\n", task, second.path)
 	second.mu.Lock()
 
@@ -60,10 +60,20 @@ func copyFileOrderedLock(task string, source, target *File) {
 func main() {
 	orig := &File{path: "original"}
 	bck := &File{path: "backup"}
-	go copyFile("backup", orig, bck)
+	done := make(chan struct{})
+
+	go func() {
+		copyFile("backup", orig, bck)
+		done <- struct{}{}
+	}()
 	copyFile("restore", bck, orig)
-	// go copyFileOrderedLock("backup", orig, bck)
+	// go func() {
+	// 	copyFileOrderedLock("backup", orig, bck)
+	// 	done <- struct{}{}
+	// }()
 	// copyFileOrderedLock("restore", bck, orig)
+
+	<-done
 }
 
 func init() {

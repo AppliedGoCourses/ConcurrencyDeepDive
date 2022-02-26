@@ -34,8 +34,15 @@ func main() {
 
 	orig := &File{path: "original"}
 	bck := &File{path: "backup"}
-	go copyFile("backup", orig, bck)
+	done := make(chan struct{})
+
+	go func() {
+		copyFile("backup", orig, bck)
+		done <- struct{}{}
+	}()
 	copyFile("restore", bck, orig)
+
+	<-done
 }
 
 func init() {

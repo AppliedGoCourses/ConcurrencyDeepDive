@@ -17,7 +17,7 @@ type File struct {
 
 func copyFile(task string, source, target *File) {
 	source.mu.Lock()
-	<-time.After(time.Millisecond * 100)
+	<-time.After(time.Millisecond * 100) // provoke a deadlock situation
 	target.mu.Lock()
 
 	copy(target.data[:], source.data[:])

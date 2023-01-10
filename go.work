@@ -1,8 +1,6 @@
 go 1.19
 
 use (
-	"./3-05 DeadlockPreventionTryLock"
-	"./3-05 DeadlockPreventionTryLock/itsyourturn"
 	./1-01-Goroutines
 	./1-02-AreGoroutinesThreads
 	./1-04-LoopSpawnCaveat
@@ -33,6 +31,8 @@ use (
 	./3-02-Deadlocks
 	./3-03-DeadlockDetection
 	./3-04-DeadlockPreventionOrderedLocks
+	./3-05-DeadlockPreventionTryLock
+	./3-05-DeadlockPreventionTryLock/itsyourturn
 	./3-06-StarvationAndLivelocks
 	./3-07-GoroutineLeaks
 	./3-07-GoroutineLeaks/bufferfix

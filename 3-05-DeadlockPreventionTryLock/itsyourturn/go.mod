@@ -2,7 +2,7 @@ module github.com/AppliedGoCourses/ConcurrencyDeepDive/3-05-DeadlockPreventionTr
 
 go 1.18
 
-replace github.com/AppliedGoCourses/ConcurrencyDeepDive/mockdb => ../mockdb
+replace github.com/AppliedGoCourses/ConcurrencyDeepDive/mockdb => ../../mockdb
 
 require appliedgo.net/what v0.1.5
 

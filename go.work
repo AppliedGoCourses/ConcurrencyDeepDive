@@ -37,5 +37,9 @@ use (
 	./3-07-GoroutineLeaks
 	./3-07-GoroutineLeaks/bufferfix
 	./3-07-GoroutineLeaks/channelfix
+	./3-08-Profiling/benchmark
+	./3-08-Profiling/cli
+	./3-08-Profiling/http
+	./3-08-Profiling/v2
 	./mockdb
 )
